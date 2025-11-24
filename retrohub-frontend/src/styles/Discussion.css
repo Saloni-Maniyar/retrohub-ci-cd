@@ -1,0 +1,101 @@
+.discussion-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: "Poppins", sans-serif;
+}
+
+.discussion-title {
+  text-align: center;
+  color: #4a4a4a;
+  margin-bottom: 1rem;
+}
+
+.feedback-topic {
+  background-color: #f6f6f6;
+  padding: 0.8rem;
+  border-radius: 10px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  color: #333;
+}
+
+.messages-box {
+  max-height: 400px;
+  overflow-y: auto;
+  background: #fafafa;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.message {
+  margin-bottom: 0.8rem;
+  padding: 0.7rem;
+  border-radius: 10px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+/* Sent messages — faint blue tone */
+.message.me {
+  background-color: #e8f0fe; /* softer blue */
+  align-self: flex-end;
+  margin-left: auto;
+  border: 1px solid #d0e2ff;
+}
+
+/* Received messages — neutral gray */
+.message.other {
+  background-color: #f1f1f1;
+  margin-right: auto;
+}
+
+.message-sender {
+  font-size: 0.8rem;
+  color: #666;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.message-content {
+  font-size: 0.95rem;
+  color: #222;
+}
+
+.message-input-box {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.message-input-box input {
+  flex: 1;
+  padding: 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+}
+
+.message-input-box button {
+  background-color: #1976d2;
+  color: white;
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.message-input-box button:hover {
+  background-color: #125ca1;
+}
+
+.no-messages {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}

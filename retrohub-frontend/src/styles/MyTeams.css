@@ -1,0 +1,22 @@
+.my-teams-page {
+  padding: 20px;
+}
+
+.teams-section {
+ 
+  margin-bottom: 40px;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #222;
+}
+
+.teams-list {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}

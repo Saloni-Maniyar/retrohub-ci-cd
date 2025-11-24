@@ -1,0 +1,91 @@
+.AddMembersModal{
+    position: fixed;
+     top: 50%;
+     left: 50%;
+    transform: translate(-50%, -50%);
+     background: #ffffff;
+    padding: 20px 24px;
+    border-radius: 12px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.2);
+     z-index: 1001; 
+     animation: slideDown 0.3s ease;
+}
+
+.AddMembersModal h2 {
+  margin-bottom: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937; /* dark gray */
+}
+
+.AddMembersModal textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  resize: none;
+  margin-bottom: 16px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.AddMembersModal textarea:focus {
+  border: 1px solid #2563eb; /* blue highlight */
+}
+/* Buttons container */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Buttons */
+.modal-actions button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+}
+
+/* Cancel button */
+.modal-actions button:first-child {
+  background: #f3f4f6; /* light gray */
+  color: #374151;
+}
+
+.modal-actions button:first-child:hover {
+  background: #e5e7eb;
+}
+
+/* Send button (primary action) */
+.modal-actions button:last-child {
+  background: #2563eb; /* blue */
+  color: #ffffff;
+}
+
+.modal-actions button:last-child:hover {
+  background: #1e40af; /* darker blue */
+}
+
+/* Animation for smooth opening */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.successMessage{
+  color:green;
+  font-weight: 600;
+}

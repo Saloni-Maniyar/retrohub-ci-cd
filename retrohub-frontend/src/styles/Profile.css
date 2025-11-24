@@ -1,0 +1,109 @@
+.profile-page {
+  max-width: 950px;
+  margin: 2.5rem auto;
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* Cards */
+.profile-card,
+.password-card {
+  flex: 1;
+  min-width: 350px;
+  background: white;
+  padding: 2rem;
+  border-radius: 18px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* Titles */
+.profile-card h2,
+.password-card h3 {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #222;
+  margin-bottom: 1.4rem;
+}
+
+/* Labels */
+label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.4rem;
+}
+
+/* Inputs */
+input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  font-size: 1rem;
+  margin-bottom: 1rem;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+input:focus {
+  border-color: #1976d2;
+}
+
+/* Readonly Email Input */
+.readonly-input {
+  background: #ececec;
+  cursor: not-allowed;
+  color: #222;
+  font-weight: 600;
+}
+
+/* Buttons */
+button {
+  width: 100%;
+  padding: 0.9rem;
+  background: #1976d2;
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: #1976d2;
+}
+
+/* Success Message */
+.success-text {
+  margin-top: 0.8rem;
+  text-align: center;
+  font-weight: 600;
+  color: #1976d2;
+}
+
+/* ERROR MESSAGE (RED) */
+.error-text {
+  color: #d32f2f;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 0.8rem;
+  text-align: center;
+}
+
+/* Forgot Password link */
+.forgot-pass-link {
+  text-align: center;
+  color: #1976d2;
+  font-size: 0.95rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.forgot-pass-link:hover {
+  color: #1976d2;
+}

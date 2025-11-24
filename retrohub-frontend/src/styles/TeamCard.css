@@ -1,0 +1,125 @@
+.team-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: left;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 10px;
+  width:280px;
+  background-color: #fff;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease-in-out;
+}
+
+.team-card:hover {
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.team-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.team-description {
+  font-size: 14px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.team-type {
+  display: inline-block;     
+  background-color: #a1a6aa;  
+  color: #fff; 
+  width: fit-content;              
+  font-size: 13px;
+  font-weight: 500;
+  padding: 2px 8px;           
+  border-radius: 4px;         
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.team-members {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: bold;
+  color: #444;
+}
+.team-members .icon {
+  width: 14px;  /* member icon slightly smaller */
+  height: 14px;
+  margin-right: 4px;
+}
+.team-members .team-member-text{
+  font-size:13px;
+  line-height:1;
+}
+
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  
+}
+
+.buttons button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;              /* spacing between text & icon */
+  padding: 0.4rem 0.75rem;   /* reduced padding */
+  font-size: 0.8rem;
+  line-height: 1.2;
+  height: auto;
+  min-height: 2.3rem;
+  border: none;
+  border-radius: 6px;
+  background-color: #0077cc;
+  color: white;
+  cursor: pointer;
+  /* white-space: nowrap;       keep full text on one line */
+  transition: all 0.2s ease-in-out;
+
+}
+
+.buttons button:hover {
+  background-color: #005fa3; 
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2); 
+  transform: translateY(-1px); 
+}
+.buttons button span {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;   /* fallback if text too long */
+}
+
+.buttons .icon {
+  width: 14px;   /* smaller than text */
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.icon{
+  width: 14px;      /* smaller width */
+  height: 14px;     /* smaller height */
+  flex-shrink: 0;   /* prevents shrinking weirdly */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+}
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}

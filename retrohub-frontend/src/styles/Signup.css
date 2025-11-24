@@ -1,0 +1,91 @@
+.Signup {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color:inherit; /* same theme color you used for home */
+  padding: 20px;
+}
+
+.Signup form {
+  background: white;
+  margin-top: 1rem;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.Signup input {
+  margin-bottom: 15px;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.Signup button {
+  background-color: #1976d2;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+.Signup button:hover {
+  background-color: #0d47a1;
+}
+
+.error {
+  color: red;
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.login-link{
+  padding:0.5rem
+}
+.signup-card{
+  border-radius: 10px;
+}
+.signuperror{
+     color:red;
+     font-size: 1.5rem;
+     font-weight: 700;
+     margin-top: 0.25rem;
+     margin-bottom:0.25rem
+}
+
+.signupSuccessMessage{
+      color:Green;
+     font-size: 1.5rem;
+     font-weight: 700;
+     margin-top: 0.25rem;
+     margin-bottom:0.25rem
+}
+.signup-success-container {
+  background-color: #e6ffed;
+  border: 1px solid #2a7f2a;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.go-to-login-btn {
+  background-color: #2a7f2a;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
