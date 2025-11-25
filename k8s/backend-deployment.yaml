@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retrohub-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: retrohub-backend
+  template:
+    metadata:
+      labels:
+        app: retrohub-backend
+    spec:
+      containers:
+      - name: retrohub-backend
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401125/retrohub-backend:v1
+        ports:
+        - containerPort: 5001

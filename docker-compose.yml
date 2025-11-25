@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./retrohub-backend
+    container_name: retrohub-backend
+    ports:
+      - "5001:5001"
+    env_file:
+      - ./retrohub-backend/.env
+
+  frontend:
+    build: ./retrohub-frontend
+    container_name: retrohub-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

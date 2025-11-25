@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: retrohub-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: retrohub-frontend
+  template:
+    metadata:
+      labels:
+        app: retrohub-frontend
+    spec:
+      containers:
+      - name: retrohub-frontend
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401125/retrohub-frontend:v1
+        ports:
+        - containerPort: 80

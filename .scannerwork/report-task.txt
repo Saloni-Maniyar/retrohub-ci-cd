@@ -1,0 +1,6 @@
+projectKey=2401125_RetroHub
+serverUrl=http://sonarqube.imcc.com
+serverVersion=25.1.0.102122
+dashboardUrl=http://sonarqube.imcc.com/dashboard?id=2401125_RetroHub
+ceTaskId=102b6996-a0b4-4497-86c0-ae2de006a5bc
+ceTaskUrl=http://sonarqube.imcc.com/api/ce/task?id=102b6996-a0b4-4497-86c0-ae2de006a5bc
