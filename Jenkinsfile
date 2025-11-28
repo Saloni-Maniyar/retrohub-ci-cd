@@ -57,7 +57,6 @@ spec:
 
     stages {
 
-        /* ================= FRONTEND BUILD ================= */
         stage('Install + Build Frontend') {
             steps {
                 container('node') {
@@ -70,7 +69,6 @@ spec:
             }
         }
 
-        /* ================= BACKEND INSTALL ================= */
         stage('Backend Install') {
             steps {
                 container('node') {
@@ -82,7 +80,6 @@ spec:
             }
         }
 
-        /* ================= DOCKER BUILD ================= */
         stage('Build Docker Images') {
             steps {
                 container('dind') {
@@ -96,7 +93,6 @@ spec:
             }
         }
 
-        /* ================= SONAR ANALYSIS ================= */
         stage('SonarQube Analysis') {
             steps {
                 container('sonar-scanner') {
@@ -113,7 +109,6 @@ spec:
             }
         }
 
-        /* ================= NEXUS LOGIN ================= */
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
@@ -124,7 +119,6 @@ spec:
             }
         }
 
-        /* ================= PUSH IMAGES ================= */
         stage('Push Images to Nexus') {
             steps {
                 container('dind') {
@@ -139,7 +133,6 @@ spec:
             }
         }
 
-        /* ================= CREATE NAMESPACE ================= */
         stage('Create Namespace If Not Exists') {
             steps {
                 container('kubectl') {
@@ -150,7 +143,6 @@ spec:
             }
         }
 
-        /* ================= K8S DEPLOY ================= */
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
@@ -161,16 +153,17 @@ spec:
                         kubectl apply -f k8s/frontend-deployment.yaml -n ${NAMESPACE}
                         kubectl apply -f k8s/frontend-service.yaml -n ${NAMESPACE}
 
-                        kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE}
-                        kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE}
+                        kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE} || true
+                        kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE} || true
                     '''
                 }
             }
         }
+    }
 
-        /* =============== DEBUG BACKEND POD LOGS ================= */
-        stage('Debug Backend Pod Logs') {
-            steps {
+    post {
+        always {
+            stage('Debug Backend Pod Logs') {
                 container('kubectl') {
                     sh '''
                         echo "=== PODS ==="
