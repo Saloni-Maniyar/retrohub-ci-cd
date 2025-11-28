@@ -161,24 +161,23 @@ spec:
         }
     }
 
+    /* ======================= ALWAYS EXECUTE LOGS ======================= */
     post {
         always {
-            stage('Debug Backend Pod Logs') {
-                container('kubectl') {
-                    sh '''
-                        echo "=== PODS ==="
-                        kubectl get pods -n ${NAMESPACE}
+            container('kubectl') {
+                sh '''
+                    echo "=== PODS ==="
+                    kubectl get pods -n ${NAMESPACE}
 
-                        POD=$(kubectl get pods -n ${NAMESPACE} | grep retrohub-backend | awk '{print $1}')
-                        echo "Backend Pod: $POD"
+                    POD=$(kubectl get pods -n ${NAMESPACE} | grep retrohub-backend | awk '{print $1}')
+                    echo "Backend Pod: $POD"
 
-                        echo "=== BACKEND LOGS ==="
-                        kubectl logs $POD -n ${NAMESPACE}
+                    echo "=== BACKEND LOGS ==="
+                    kubectl logs $POD -n ${NAMESPACE}
 
-                        echo "=== POD DESCRIBE ==="
-                        kubectl describe pod $POD -n ${NAMESPACE}
-                    '''
-                }
+                    echo "=== POD DESCRIBE ==="
+                    kubectl describe pod $POD -n ${NAMESPACE}
+                '''
             }
         }
     }
