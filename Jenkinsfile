@@ -8,12 +8,12 @@ spec:
   containers:
 
   - name: node
-    image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/library/node:18
+    image: node:20
     command: ['cat']
     tty: true
 
   - name: sonar-scanner
-    image: sonarsource/sonar-scanner-cli
+    image: sonarsource/sonar-scanner-cli:latest
     command: ['cat']
     tty: true
 
@@ -31,14 +31,26 @@ spec:
 
   - name: dind
     image: docker:24-dind
+    command: ['dockerd-entrypoint.sh']
     args: ["--storage-driver=overlay2"]
     securityContext:
       privileged: true
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /home/jenkins/agent
+
+  - name: jnlp
+    image: jenkins/inbound-agent:latest
+    volumeMounts:
+    - name: workspace-volume
+      mountPath: /home/jenkins/agent
 
   volumes:
+    - name: workspace-volume
+      emptyDir: {}
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
