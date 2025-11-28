@@ -133,6 +133,7 @@ spec:
             }
         }
 
+        /* ---- Create Namespace ---- */
         stage('Create Namespace If Not Exists') {
             steps {
                 container('kubectl') {
@@ -143,6 +144,39 @@ spec:
             }
         }
 
+        /* ---- Create imagePullSecret ---- */
+        stage('Create ImagePullSecret If Not Exists') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        if ! kubectl get secret nexus-creds -n ${NAMESPACE}; then
+                            kubectl create secret docker-registry nexus-creds \
+                              --docker-server=${NEXUS} \
+                              --docker-username=admin \
+                              --docker-password=Changeme@2025 \
+                              -n ${NAMESPACE}
+                        fi
+                    '''
+                }
+            }
+        }
+
+        /* ---- Patch Deployments ---- */
+        stage('Patch Deployments With ImagePullSecret') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        kubectl patch deployment retrohub-backend -n ${NAMESPACE} \
+                          -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
+
+                        kubectl patch deployment retrohub-frontend -n ${NAMESPACE} \
+                          -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
+                    '''
+                }
+            }
+        }
+
+        /* ---- Deploy ---- */
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
@@ -161,7 +195,7 @@ spec:
         }
     }
 
-    /* ======================= ALWAYS EXECUTE LOGS ======================= */
+    /* ---- ALWAYS print logs ---- */
     post {
         always {
             container('kubectl') {
@@ -173,10 +207,10 @@ spec:
                     echo "Backend Pod: $POD"
 
                     echo "=== BACKEND LOGS ==="
-                    kubectl logs $POD -n ${NAMESPACE}
+                    kubectl logs $POD -n ${NAMESPACE} || true
 
                     echo "=== POD DESCRIBE ==="
-                    kubectl describe pod $POD -n ${NAMESPACE}
+                    kubectl describe pod $POD -n ${NAMESPACE} || true
                 '''
             }
         }
