@@ -18,7 +18,7 @@ spec:
     tty: true
 
   - name: kubectl
-    image: lachlanevenson/k8s-kubectl      # FIXED IMAGE
+    image: lachlanevenson/k8s-kubectl
     command: ['cat']
     tty: true
     env:
@@ -139,7 +139,7 @@ spec:
             }
         }
 
-        /* ================= CREATE NAMESPACE IF MISSING ================= */
+        /* ================= CREATE NAMESPACE ================= */
         stage('Create Namespace If Not Exists') {
             steps {
                 container('kubectl') {
@@ -163,6 +163,27 @@ spec:
 
                         kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE}
                         kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE}
+                    '''
+                }
+            }
+        }
+
+        /* =============== DEBUG BACKEND POD LOGS ================= */
+        stage('Debug Backend Pod Logs') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "=== PODS ==="
+                        kubectl get pods -n ${NAMESPACE}
+
+                        POD=$(kubectl get pods -n ${NAMESPACE} | grep retrohub-backend | awk '{print $1}')
+                        echo "Backend Pod: $POD"
+
+                        echo "=== BACKEND LOGS ==="
+                        kubectl logs $POD -n ${NAMESPACE}
+
+                        echo "=== POD DESCRIBE ==="
+                        kubectl describe pod $POD -n ${NAMESPACE}
                     '''
                 }
             }
