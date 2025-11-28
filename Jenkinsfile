@@ -85,7 +85,6 @@ spec:
                 container('dind') {
                     sh '''
                         sleep 10
-
                         docker build -t ${BACKEND_IMG}:latest ./retrohub-backend
                         docker build -t ${FRONTEND_IMG}:latest ./retrohub-frontend
                     '''
@@ -105,24 +104,6 @@ spec:
                                 -Dsonar.login=$SONAR_TOKEN
                         """
                     }
-                }
-            }
-        }
-
-        /* 🔍 DEBUG NEXUS SERVICE HERE */
-        stage('Debug Nexus Service') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        echo "=== NEXUS SERVICES (all namespaces) ==="
-                        kubectl get svc -A | grep -i nexus || true
-
-                        echo "=== NEXUS PODS ==="
-                        kubectl get pods -A | grep -i nexus || true
-
-                        echo "=== NEXUS NAMESPACES ==="
-                        kubectl get ns | grep -i nexus || true
-                    '''
                 }
             }
         }
@@ -205,26 +186,6 @@ spec:
                         kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE} || true
                     '''
                 }
-            }
-        }
-    }
-
-    post {
-        always {
-            container('kubectl') {
-                sh '''
-                    echo "=== PODS ==="
-                    kubectl get pods -n ${NAMESPACE}
-
-                    POD=$(kubectl get pods -n ${NAMESPACE} | grep retrohub-backend | awk '{print $1}')
-                    echo "Backend Pod: $POD"
-
-                    echo "=== BACKEND LOGS ==="
-                    kubectl logs $POD -n ${NAMESPACE} || true
-
-                    echo "=== POD DESCRIBE ==="
-                    kubectl describe pod $POD -n ${NAMESPACE} || true
-                '''
             }
         }
     }
