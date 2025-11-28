@@ -8,17 +8,17 @@ spec:
   containers:
 
   - name: node
-    image: node:20
+    image: node:18
     command: ['cat']
     tty: true
 
   - name: sonar-scanner
-    image: sonarsource/sonar-scanner-cli:latest
+    image: sonarsource/sonar-scanner-cli
     command: ['cat']
     tty: true
 
   - name: kubectl
-    image: bitnami/kubectl:latest
+    image: lachlanevenson/k8s-kubectl
     command: ['cat']
     tty: true
     env:
@@ -30,27 +30,18 @@ spec:
       subPath: kubeconfig
 
   - name: dind
-    image: docker:24-dind
-    command: ['dockerd-entrypoint.sh']
+    image: docker:dind
     args: ["--storage-driver=overlay2"]
     securityContext:
       privileged: true
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
-    volumeMounts:
-    - name: workspace-volume
-      mountPath: /home/jenkins/agent
 
   - name: jnlp
     image: jenkins/inbound-agent:latest
-    volumeMounts:
-    - name: workspace-volume
-      mountPath: /home/jenkins/agent
 
   volumes:
-    - name: workspace-volume
-      emptyDir: {}
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
@@ -59,13 +50,11 @@ spec:
     }
 
     environment {
-        REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+        BACKEND_IMG = "retrohub-backend"
+        FRONTEND_IMG = "retrohub-frontend"
+        NEXUS = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
         PROJECT_FOLDER = "2401125"
         NAMESPACE = "2401125"
-
-        BACKEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-backend"
-        FRONTEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-frontend"
-        TAG = "v1"
     }
 
     stages {
@@ -97,9 +86,30 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
-                        docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
+                        sleep 5
+
+                        docker build --pull=false \
+                            -t ${BACKEND_IMG}:latest ./retrohub-backend
+
+                        docker build --pull=false \
+                            -t ${FRONTEND_IMG}:latest ./retrohub-frontend
                     '''
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                container('sonar-scanner') {
+                    withCredentials([string(credentialsId: 'sonar-token-2401125-new', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            sonar-scanner \
+                                -Dsonar.projectKey=2401125_RetroHub \
+                                -Dsonar.sources=retrohub-backend \
+                                -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                                -Dsonar.login=$SONAR_TOKEN
+                        """
+                    }
                 }
             }
         }
@@ -108,7 +118,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Changeme@2025" | docker login ${REGISTRY} -u admin --password-stdin
+                        docker login ${NEXUS} -u admin -p Changeme@2025
                     '''
                 }
             }
@@ -118,8 +128,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker push ${BACKEND_IMAGE}:${TAG}
-                        docker push ${FRONTEND_IMAGE}:${TAG}
+                        docker tag ${BACKEND_IMG}:latest ${NEXUS}/${PROJECT_FOLDER}/${BACKEND_IMG}:v1
+                        docker tag ${FRONTEND_IMG}:latest ${NEXUS}/${PROJECT_FOLDER}/${FRONTEND_IMG}:v1
+
+                        docker push ${NEXUS}/${PROJECT_FOLDER}/${BACKEND_IMG}:v1
+                        docker push ${NEXUS}/${PROJECT_FOLDER}/${FRONTEND_IMG}:v1
                     '''
                 }
             }
@@ -141,7 +154,7 @@ spec:
                     sh '''
                         if ! kubectl get secret nexus-creds -n ${NAMESPACE}; then
                           kubectl create secret docker-registry nexus-creds \
-                            --docker-server=${REGISTRY} \
+                            --docker-server=${NEXUS} \
                             --docker-username=admin \
                             --docker-password=Changeme@2025 \
                             -n ${NAMESPACE}
