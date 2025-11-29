@@ -90,9 +90,27 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        sleep 3
+
                         docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
                         docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
                     '''
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                container('sonar-scanner') {
+                    withCredentials([string(credentialsId: 'sonar-token-2401125-new', variable: 'SONAR_TOKEN')]) {
+                        sh """
+                            sonar-scanner \
+                              -Dsonar.projectKey=2401125_RetroHub \
+                              -Dsonar.sources=retrohub-backend \
+                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                              -Dsonar.token=$SONAR_TOKEN
+                        """
+                    }
                 }
             }
         }
@@ -144,10 +162,28 @@ spec:
             }
         }
 
+        /* ---- DEPLOY FIRST ---- */
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        kubectl apply -f k8s/backend-deployment.yaml -n ${NAMESPACE}
+                        kubectl apply -f k8s/backend-service.yaml -n ${NAMESPACE}
+
+                        kubectl apply -f k8s/frontend-deployment.yaml -n ${NAMESPACE}
+                        kubectl apply -f k8s/frontend-service.yaml -n ${NAMESPACE}
+                    '''
+                }
+            }
+        }
+
+        /* ---- THEN PATCH ---- */
         stage('Patch Deployments With ImagePullSecret') {
             steps {
                 container('kubectl') {
                     sh '''
+                        sleep 5
+
                         kubectl patch deployment retrohub-backend -n ${NAMESPACE} \
                           -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
 
@@ -158,16 +194,11 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        /* ---- ROLLOUT STATUS ---- */
+        stage('Rollout Status') {
             steps {
                 container('kubectl') {
                     sh '''
-                        kubectl apply -f k8s/backend-deployment.yaml -n ${NAMESPACE}
-                        kubectl apply -f k8s/backend-service.yaml -n ${NAMESPACE}
-
-                        kubectl apply -f k8s/frontend-deployment.yaml -n ${NAMESPACE}
-                        kubectl apply -f k8s/frontend-service.yaml -n ${NAMESPACE}
-
                         kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE} || true
                         kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE} || true
                     '''
