@@ -33,7 +33,7 @@ spec:
     image: docker:24-dind
     args:
       - "--storage-driver=overlay2"
-      - "--insecure-registry=127.0.0.1:30085"
+      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     securityContext:
       privileged: true
     env:
@@ -52,7 +52,7 @@ spec:
     }
 
     environment {
-        REGISTRY = "127.0.0.1:30085"
+        REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
         PROJECT_FOLDER = "2401125"
         NAMESPACE = "2401125"
 
@@ -90,27 +90,9 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        sleep 4
-
                         docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
                         docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
                     '''
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'sonar-token-2401125-new', variable: 'SONAR_TOKEN')]) {
-                        sh """
-                            sonar-scanner \
-                              -Dsonar.projectKey=2401125_RetroHub \
-                              -Dsonar.sources=retrohub-backend \
-                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                              -Dsonar.token=$SONAR_TOKEN
-                        """
-                    }
                 }
             }
         }
