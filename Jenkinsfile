@@ -69,7 +69,6 @@ spec:
                     sh '''
                         cd retrohub-frontend
                         npm install
-                        npm install -g vite
                         npm run build
                     '''
                 }
@@ -92,6 +91,7 @@ spec:
                 container('dind') {
                     sh '''
                         sleep 3
+
                         docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
                         docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
                     '''
@@ -162,6 +162,7 @@ spec:
             }
         }
 
+        /* ---- DEPLOY FIRST ---- */
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
@@ -176,23 +177,13 @@ spec:
             }
         }
 
-        stage('Update Backend Image') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        kubectl set image deployment/retrohub-backend \
-                        retrohub-backend=${BACKEND_IMAGE}:${TAG} \
-                        -n ${NAMESPACE}
-                    '''
-                }
-            }
-        }
-
+        /* ---- THEN PATCH ---- */
         stage('Patch Deployments With ImagePullSecret') {
             steps {
                 container('kubectl') {
                     sh '''
                         sleep 5
+
                         kubectl patch deployment retrohub-backend -n ${NAMESPACE} \
                           -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
 
@@ -203,6 +194,7 @@ spec:
             }
         }
 
+        /* ---- ROLLOUT STATUS ---- */
         stage('Rollout Status') {
             steps {
                 container('kubectl') {
