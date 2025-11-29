@@ -22,18 +22,18 @@ spec:
     command: ['cat']
     tty: true
     env:
-    - name: KUBECONFIG
-      value: /kube/config
+      - name: KUBECONFIG
+        value: /kube/config
     volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
+      - name: kubeconfig-secret
+        mountPath: /kube/config
+        subPath: kubeconfig
 
   - name: dind
-    image: docker:dind
+    image: docker:24-dind
     args:
       - "--storage-driver=overlay2"
-      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+      - "--insecure-registry=127.0.0.1:30085"
     securityContext:
       privileged: true
     env:
@@ -52,11 +52,13 @@ spec:
     }
 
     environment {
-        BACKEND_IMG = "retrohub-backend"
-        FRONTEND_IMG = "retrohub-frontend"
-        NEXUS = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+        REGISTRY = "127.0.0.1:30085"
         PROJECT_FOLDER = "2401125"
         NAMESPACE = "2401125"
+
+        BACKEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-backend"
+        FRONTEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-frontend"
+        TAG = "v1"
     }
 
     stages {
@@ -90,8 +92,8 @@ spec:
                     sh '''
                         sleep 4
 
-                        docker build --pull=false -t ${BACKEND_IMG}:latest ./retrohub-backend
-                        docker build --pull=false -t ${FRONTEND_IMG}:latest ./retrohub-frontend
+                        docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
+                        docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
                     '''
                 }
             }
@@ -117,7 +119,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Changeme@2025" | docker login ${NEXUS} -u admin --password-stdin
+                        echo "Changeme@2025" | docker login ${REGISTRY} -u admin --password-stdin
                     '''
                 }
             }
@@ -127,11 +129,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag ${BACKEND_IMG}:latest ${NEXUS}/${PROJECT_FOLDER}/${BACKEND_IMG}:v1
-                        docker tag ${FRONTEND_IMG}:latest ${NEXUS}/${PROJECT_FOLDER}/${FRONTEND_IMG}:v1
-
-                        docker push ${NEXUS}/${PROJECT_FOLDER}/${BACKEND_IMG}:v1
-                        docker push ${NEXUS}/${PROJECT_FOLDER}/${FRONTEND_IMG}:v1
+                        docker push ${BACKEND_IMAGE}:${TAG}
+                        docker push ${FRONTEND_IMAGE}:${TAG}
                     '''
                 }
             }
@@ -153,7 +152,7 @@ spec:
                     sh '''
                         if ! kubectl get secret nexus-creds -n ${NAMESPACE}; then
                             kubectl create secret docker-registry nexus-creds \
-                                --docker-server=${NEXUS} \
+                                --docker-server=${REGISTRY} \
                                 --docker-username=admin \
                                 --docker-password=Changeme@2025 \
                                 -n ${NAMESPACE}

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: retrohub-backend
+  namespace: "2401125"
 spec:
   replicas: 1
   selector:
@@ -12,8 +13,10 @@ spec:
       labels:
         app: retrohub-backend
     spec:
+      imagePullSecrets:
+        - name: nexus-creds
       containers:
-      - name: retrohub-backend
-        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401125/retrohub-backend:v1
-        ports:
-        - containerPort: 5001
+        - name: retrohub-backend
+          image: 127.0.0.1:30085/2401125/retrohub-backend:v1
+          ports:
+            - containerPort: 5001
