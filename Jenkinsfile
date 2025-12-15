@@ -83,7 +83,10 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker build -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
+                        docker build \
+                  --build-arg VITE_API_URL=http://2401125.imcc.com \
+                  -t ${FRONTEND_IMAGE}:${TAG} \
+                  ./retrohub-frontend
                     '''
                 }
             }
