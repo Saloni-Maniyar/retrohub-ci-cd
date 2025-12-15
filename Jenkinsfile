@@ -61,7 +61,7 @@ spec:
 
         BACKEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-backend"
         FRONTEND_IMAGE = "${REGISTRY}/${PROJECT_FOLDER}/retrohub-frontend"
-        TAG = "v1"
+        TAG = "v2"
     }
 
     stages {
