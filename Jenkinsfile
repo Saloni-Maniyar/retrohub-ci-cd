@@ -56,6 +56,9 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        echo "Waiting for Docker daemon..."
+                        sleep 10
+                        docker info
                         echo "Building backend image..."
                         docker build -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
                         docker image ls
@@ -68,6 +71,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        echo "Waiting for Docker daemon..."
+                        sleep 5
                         echo "Building frontend image..."
                         docker build -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
                         docker image ls
