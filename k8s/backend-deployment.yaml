@@ -37,7 +37,7 @@ spec:
               value: "dffk ccxi uqyx ryod"
 
             - name: FRONTEND_URL     # <-- NEW: added FE URL for CORS
-              value: "https://2401125.imcc.com"
+              value: "http://2401125.imcc.com"
 
             - name: FRONTEND_URL_LOCAL   # <-- NEW: local dev allowed
               value: "http://localhost:5173"
