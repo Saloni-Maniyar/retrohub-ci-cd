@@ -7,19 +7,14 @@ kind: Pod
 spec:
   containers:
 
-  - name: node
-    image: node:20
-    command: ['cat']
-    tty: true
-
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
-    command: ['cat']
+    command: ["cat"]
     tty: true
 
   - name: kubectl
     image: lachlanevenson/k8s-kubectl
-    command: ['cat']
+    command: ["cat"]
     tty: true
     env:
       - name: KUBECONFIG
@@ -29,37 +24,15 @@ spec:
         mountPath: /kube/config
         subPath: kubeconfig
 
-  # 🔑 Docker-in-Docker (FIXED)
   - name: dind
-    image: docker:24-dind
+    image: docker:dind
     securityContext:
       privileged: true
-    command:
-      - dockerd-entrypoint.sh
-    args:
-      - "--storage-driver=overlay2"
-      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     env:
       - name: DOCKER_TLS_CERTDIR
         value: ""
-    volumeMounts:
-      - name: docker-sock
-        mountPath: /var/run
-      - name: docker-lib
-        mountPath: /var/lib/docker
-
-  - name: jnlp
-    image: jenkins/inbound-agent:latest
 
   volumes:
-    # 🔑 REQUIRED for docker.sock
-    - name: docker-sock
-      emptyDir: {}
-
-    # 🔑 REQUIRED for Docker daemon data
-    - name: docker-lib
-      emptyDir: {}
-
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
@@ -68,8 +41,6 @@ spec:
     }
 
     environment {
-        DOCKER_HOST = "unix:///var/run/docker.sock"
-
         REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
         PROJECT_FOLDER = "2401125"
         NAMESPACE = "2401125"
@@ -81,37 +52,25 @@ spec:
 
     stages {
 
-        stage('Skip Local Frontend Build') {
-            steps {
-                echo "Frontend build will happen inside Dockerfile"
-            }
-        }
-
-        stage('Skip Local Backend Install') {
-            steps {
-                echo "Backend install will happen inside Dockerfile"
-            }
-        }
-
-        /* 🔍 Docker verification */
-        stage('Docker Sanity Check') {
+        stage('Build Backend Docker Image') {
             steps {
                 container('dind') {
                     sh '''
-                        ls -l /var/run/docker.sock
-                        docker version
-                        docker info
+                        echo "Building backend image..."
+                        docker build -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
+                        docker image ls
                     '''
                 }
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Frontend Docker Image') {
             steps {
                 container('dind') {
                     sh '''
-                        docker build --pull=false -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
-                        docker build --pull=false -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
+                        echo "Building frontend image..."
+                        docker build -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
+                        docker image ls
                     '''
                 }
             }
@@ -121,13 +80,13 @@ spec:
             steps {
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token-2401125-new', variable: 'SONAR_TOKEN')]) {
-                        sh """
+                        sh '''
                             sonar-scanner \
                               -Dsonar.projectKey=2401125_RetroHub \
                               -Dsonar.sources=retrohub-backend \
                               -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
                               -Dsonar.token=$SONAR_TOKEN
-                        """
+                        '''
                     }
                 }
             }
@@ -137,7 +96,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Changeme@2025" | docker login ${REGISTRY} -u admin --password-stdin
+                        docker --version
+                        docker login ${REGISTRY} -u admin -p Changeme@2025
                     '''
                 }
             }
@@ -149,6 +109,7 @@ spec:
                     sh '''
                         docker push ${BACKEND_IMAGE}:${TAG}
                         docker push ${FRONTEND_IMAGE}:${TAG}
+                        docker image ls
                     '''
                 }
             }
@@ -169,11 +130,11 @@ spec:
                 container('kubectl') {
                     sh '''
                         if ! kubectl get secret nexus-creds -n ${NAMESPACE}; then
-                            kubectl create secret docker-registry nexus-creds \
-                                --docker-server=${REGISTRY} \
-                                --docker-username=admin \
-                                --docker-password=Changeme@2025 \
-                                -n ${NAMESPACE}
+                          kubectl create secret docker-registry nexus-creds \
+                            --docker-server=${REGISTRY} \
+                            --docker-username=admin \
+                            --docker-password=Changeme@2025 \
+                            -n ${NAMESPACE}
                         fi
                     '''
                 }
@@ -186,25 +147,9 @@ spec:
                     sh '''
                         kubectl apply -f k8s/backend-deployment.yaml -n ${NAMESPACE}
                         kubectl apply -f k8s/backend-service.yaml -n ${NAMESPACE}
-
                         kubectl apply -f k8s/frontend-deployment.yaml -n ${NAMESPACE}
                         kubectl apply -f k8s/frontend-service.yaml -n ${NAMESPACE}
                         kubectl apply -f k8s/ingress.yaml -n ${NAMESPACE}
-                    '''
-                }
-            }
-        }
-
-        stage('Patch Deployments With ImagePullSecret') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        sleep 5
-                        kubectl patch deployment retrohub-backend -n ${NAMESPACE} \
-                          -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
-
-                        kubectl patch deployment retrohub-frontend -n ${NAMESPACE} \
-                          -p '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"nexus-creds"}]}}}}'
                     '''
                 }
             }
@@ -226,7 +171,7 @@ spec:
         always {
             container('kubectl') {
                 sh '''
-                    echo "=== PODS ==="
+                    echo "=== POD STATUS ==="
                     kubectl get pods -n ${NAMESPACE}
                 '''
             }
