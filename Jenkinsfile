@@ -25,14 +25,28 @@ spec:
         subPath: kubeconfig
 
   - name: dind
-    image: docker:dind
+    image: docker:24-dind
     securityContext:
       privileged: true
+    command:
+      - dockerd
+    args:
+      - "--host=unix:///var/run/docker.sock"
+      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     env:
       - name: DOCKER_TLS_CERTDIR
         value: ""
+    volumeMounts:
+      - name: docker-sock
+        mountPath: /var/run
+      - name: docker-lib
+        mountPath: /var/lib/docker
 
   volumes:
+    - name: docker-sock
+      emptyDir: {}
+    - name: docker-lib
+      emptyDir: {}
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
@@ -56,12 +70,10 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Waiting for Docker daemon..."
+                        echo "Waiting for Docker..."
                         sleep 10
                         docker info
-                        echo "Building backend image..."
                         docker build -t ${BACKEND_IMAGE}:${TAG} ./retrohub-backend
-                        docker image ls
                     '''
                 }
             }
@@ -71,11 +83,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Waiting for Docker daemon..."
-                        sleep 5
-                        echo "Building frontend image..."
                         docker build -t ${FRONTEND_IMAGE}:${TAG} ./retrohub-frontend
-                        docker image ls
                     '''
                 }
             }
@@ -101,8 +109,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker --version
-                        docker login ${REGISTRY} -u admin -p Changeme@2025
+                        echo "Changeme@2025" | docker login ${REGISTRY} -u admin --password-stdin
                     '''
                 }
             }
@@ -114,7 +121,6 @@ spec:
                     sh '''
                         docker push ${BACKEND_IMAGE}:${TAG}
                         docker push ${FRONTEND_IMAGE}:${TAG}
-                        docker image ls
                     '''
                 }
             }
@@ -164,21 +170,10 @@ spec:
             steps {
                 container('kubectl') {
                     sh '''
-                        kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE} || true
-                        kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE} || true
+                        kubectl rollout status deployment/retrohub-backend -n ${NAMESPACE}
+                        kubectl rollout status deployment/retrohub-frontend -n ${NAMESPACE}
                     '''
                 }
-            }
-        }
-    }
-
-    post {
-        always {
-            container('kubectl') {
-                sh '''
-                    echo "=== POD STATUS ==="
-                    kubectl get pods -n ${NAMESPACE}
-                '''
             }
         }
     }
