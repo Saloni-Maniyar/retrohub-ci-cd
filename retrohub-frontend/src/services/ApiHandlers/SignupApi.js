@@ -4,6 +4,7 @@ const API = import.meta.env.VITE_API_URL;
 
 export async function SignupApi({ name, email, password, teamId }) {
   console.log("In SignupApi function");
+  console.log("Api")
   console.log("Api is ",API);
 
   try {
